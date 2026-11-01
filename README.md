@@ -2,4 +2,4 @@
 Trabajo Final de Fundamentos
 
 Tablero Kanban:
-https://cryptpad.fr/kanban/#/3/kanban/edit/442e33a9dbf7f5c89bf947f70af256d6/
+https://cryptpad.fr/kanban/#/2/kanban/edit/Z-4+wV6ibquBfK6vKwLh8GuH/
