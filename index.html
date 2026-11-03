@@ -4,151 +4,460 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PilarBus - Ecosistema de Transporte Público</title>
+    
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Leaflet CSS (Mapa) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
     <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand { font-weight: bold; color: #0d6efd !important; }
-        #map { height: 60vh; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1;}
-        .status-card { border-left: 5px solid #198754; }
-        .bus-marker {
-            background-color: #0d6efd;
+        :root {
+            --primary-blue: #0f4c81;
+            --secondary-blue: #1b6ca8;
+            --accent-color: #00a896;
+            --bg-light: #f4f7f6;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: var(--primary-blue) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link.active {
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #map {
+            height: 65vh;
+            min-height: 380px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            z-index: 1;
+        }
+
+        .bus-marker-icon {
+            background-color: var(--primary-blue);
             color: white;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 11px;
             border-radius: 50%;
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 2px solid white;
-            box-shadow: 0px 2px 5px rgba(0,0,0,0.4);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .bus-marker-warning {
+            background-color: #dc3545;
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: white;
+        }
+
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 0.4em 0.8em;
+            border-radius: 6px;
+        }
+
+        .footer {
+            margin-top: auto;
+            background-color: #1e293b;
+            color: #94a3b8;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-    <!-- Navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- Navegación Adaptable -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">PilarBus UNP</a>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <i class="bi bi-bus-front-fill fs-4 text-info"></i>
+                <span>PilarBus <small class="fs-6 fw-light text-white-50">UNP</small></span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="#">Mapa en Vivo</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#reclamos">Reclamos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Cargar SUBE</a></li>
+                <ul class="navbar-nav ms-auto gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="switchView('mapa', this)">
+                            <i class="bi bi-geo-alt-fill me-1"></i>Mapa en Vivo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="switchView('horarios', this)">
+                            <i class="bi bi-clock-fill me-1"></i>Líneas y Horarios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="switchView('sube', this)">
+                            <i class="bi bi-credit-card-2-front-fill me-1"></i>Cargar SUBE
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="switchView('reclamos', this)">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Reclamos
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Contenido Principal -->
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-lg-8 mb-4">
-                <h4 class="mb-3">Recorridos en Tiempo Real</h4>
-                <div id="map"></div>
-            </div>
-            
-            <div class="col-lg-4 mb-4">
-                <h4 class="mb-3">Estado del Servicio</h4>
-                <div class="card status-card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title text-success">Línea 510 - Normal</h5>
-                        <p class="card-text text-muted">Frecuencia de 15 minutos. Sin desvíos reportados.</p>
-                    </div>
-                </div>
-                <div class="card status-card mb-3" style="border-left-color: #ffc107;">
-                    <div class="card-body">
-                        <h5 class="card-title text-warning">Línea 520 - Desvío</h5>
-                        <p class="card-text text-muted">Desvío por obras en Plaza Pilar. Demoras de 5 min.</p>
-                    </div>
-                </div>
-                
-                <!-- Panel Beta -->
-                <div class="alert alert-info mt-4" role="alert">
-                    <strong>Versión Beta:</strong> Funcionalidades bajo desarrollo ágil. Sus comentarios ayudan a mejorar PilarBus.
-                </div>
-            </div>
-        </div>
+    <main class="container my-4">
 
-        <!-- Formulario de Reclamos Simulado -->
-        <div class="row mb-5" id="reclamos">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        Reportar Inconveniente
+        <!-- VISTA 1: MAPA EN VIVO -->
+        <section id="view-mapa" class="view-section active">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold m-0 text-dark">Monitoreo en Tiempo Real</h4>
+                        <span class="badge bg-success d-flex align-items-center gap-1">
+                            <i class="bi bi-broadcast"></i> GPS Activo
+                        </span>
                     </div>
-                    <div class="card-body">
-                        <form onsubmit="event.preventDefault(); alert('Reclamo enviado a la Municipalidad. Ticket #4029 generado exitosamente.');">
+                    <div id="map"></div>
+                </div>
+
+                <div class="col-lg-4">
+                    <h4 class="fw-bold mb-3 text-dark">Estado del Servicio</h4>
+                    
+                    <div class="card card-custom p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold m-0">Línea 510</h6>
+                                <small class="text-muted">Recorrido: Estación Pilar - Alberti</small>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle status-badge">Normal</span>
+                        </div>
+                        <hr class="my-2">
+                        <small class="text-secondary"><i class="bi bi-arrow-repeat me-1"></i>Frecuencia: 12 min</small>
+                    </div>
+
+                    <div class="card card-custom p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold m-0">Línea 520</h6>
+                                <small class="text-muted">Recorrido: Plaza Pilar - Derqui</small>
+                            </div>
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle status-badge">Desvío</span>
+                        </div>
+                        <hr class="my-2">
+                        <small class="text-secondary"><i class="bi bi-info-circle me-1"></i>Obras en calle Tratado del Pilar (+8 min)</small>
+                    </div>
+
+                    <div class="card card-custom p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold m-0">Línea 276</h6>
+                                <small class="text-muted">Recorrido: Pilar - Escobar</small>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle status-badge">Normal</span>
+                        </div>
+                        <hr class="my-2">
+                        <small class="text-secondary"><i class="bi bi-arrow-repeat me-1"></i>Frecuencia: 20 min</small>
+                    </div>
+
+                    <div class="alert alert-primary card-custom p-3 border-0 d-flex gap-3 align-items-center">
+                        <i class="bi bi-kanban fs-2 text-primary"></i>
+                        <div>
+                            <strong class="d-block">Metodología Ágil</strong>
+                            <small class="text-muted">Plataforma bajo desarrollo iterativo. Beta v1.0.4.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 2: LÍNEAS Y HORARIOS -->
+        <section id="view-horarios" class="view-section">
+            <h4 class="fw-bold mb-3 text-dark">Líneas y Cronograma de Frecuencias</h4>
+            <div class="card card-custom p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Línea</th>
+                                <th>Origen / Destino</th>
+                                <th>Primer Servicio</th>
+                                <th>Último Servicio</th>
+                                <th>Frecuencia Media</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="fw-bold text-primary">510</span></td>
+                                <td>Estación Pilar - Del Viso / Villa Rosa</td>
+                                <td>04:30 hs</td>
+                                <td>23:45 hs</td>
+                                <td>12 minutos</td>
+                                <td><span class="badge bg-success">Habitual</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fw-bold text-primary">520</span></td>
+                                <td>Plaza Pilar - Presidente Derqui</td>
+                                <td>05:00 hs</td>
+                                <td>00:15 hs</td>
+                                <td>15 minutos</td>
+                                <td><span class="badge bg-warning text-dark">Con demoras</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fw-bold text-primary">276</span></td>
+                                <td>Terminal Pilar - Cazador (Escobar)</td>
+                                <td>04:00 hs</td>
+                                <td>23:00 hs</td>
+                                <td>20 minutos</td>
+                                <td><span class="badge bg-success">Habitual</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fw-bold text-primary">501</span></td>
+                                <td>Estación Pilar - San Alejo</td>
+                                <td>05:15 hs</td>
+                                <td>22:30 hs</td>
+                                <td>18 minutos</td>
+                                <td><span class="badge bg-success">Habitual</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 3: CARGAR SUBE -->
+        <section id="view-sube" class="view-section">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card card-custom p-4">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-credit-card-2-front fs-1 text-primary"></i>
+                            <h4 class="fw-bold mt-2">Carga Virtual SUBE</h4>
+                            <p class="text-muted small">Simulador de acreditación de saldo instantáneo</p>
+                        </div>
+                        
+                        <form onsubmit="handleSubeRecharge(event)">
                             <div class="mb-3">
-                                <label class="form-label">Línea de Colectivo</label>
+                                <label class="form-label fw-bold">Número de Tarjeta SUBE</label>
+                                <input type="text" class="form-control" placeholder="6061 2680 XXXX XXXX" maxlength="19" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Monto a Cargar</label>
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <input type="radio" class="btn-check" name="monto" id="m1" value="1000" checked>
+                                        <label class="btn btn-outline-primary w-100" for="m1">$1.000</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="radio" class="btn-check" name="monto" id="m2" value="2000">
+                                        <label class="btn btn-outline-primary w-100" for="m2">$2.000</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="radio" class="btn-check" name="monto" id="m3" value="5000">
+                                        <label class="btn btn-outline-primary w-100" for="m3">$5.000</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Medio de Pago</label>
                                 <select class="form-select">
-                                    <option>Línea 510</option>
-                                    <option>Línea 520</option>
-                                    <option>Línea 276</option>
+                                    <option>Mercado Pago</option>
+                                    <option>Cuenta DNI</option>
+                                    <option>Tarjeta de Débito</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Descripción del problema</label>
-                                <textarea class="form-control" rows="3" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Enviar Reporte</button>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                                <i class="bi bi-wallet2 me-2"></i>Acreditar Carga
+                            </button>
                         </form>
                     </div>
                 </div>
             </div>
+        </section>
+
+        <!-- VISTA 4: RECLAMOS Y REPORTES -->
+        <section id="view-reclamos" class="view-section">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card card-custom p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="bi bi-chat-left-text-fill fs-2 text-primary"></i>
+                            <div>
+                                <h4 class="fw-bold m-0">Canal Directo de Reclamos</h4>
+                                <p class="text-muted m-0 small">Enviá reportes a la Municipalidad y al centro de atención UNP</p>
+                            </div>
+                        </div>
+
+                        <form onsubmit="handleClaimSubmit(event)">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Línea Afectada</label>
+                                    <select class="form-select" required>
+                                        <option value="">Seleccionar línea...</option>
+                                        <option>Línea 510</option>
+                                        <option>Línea 520</option>
+                                        <option>Línea 276</option>
+                                        <option>Línea 501</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Tipo de Incidencia</label>
+                                    <select class="form-select" required>
+                                        <option value="">Seleccionar motivo...</option>
+                                        <option>Demora Excesiva / Colectivo no pasó</option>
+                                        <option>Unidad fuera de recorrido sin aviso</option>
+                                        <option>Trato inadecuado del personal</option>
+                                        <option>Estado de la unidad</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Detalle de la Incidencia</label>
+                                    <textarea class="form-control" rows="4" placeholder="Indicar parada, hora aproximada e interno si lo visualizó..." required></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+                                        <i class="bi bg-send me-1"></i>Enviar Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pie de página institucional -->
+    <footer class="footer py-3 border-top border-secondary">
+        <div class="container text-center text-md-between d-md-flex align-items-center">
+            <p class="mb-0">Universidad Nacional de Pilar &copy; 2026 - Proyecto Ágil Integrador</p>
+            <p class="mb-0 small text-white-50">Entorno CI/CD Automatizado | GitHub Pages Deploy</p>
         </div>
-    </div>
+    </footer>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Inicializar mapa centrado en la Plaza de Pilar
-        var map = L.map('map').setView([-34.4587, -58.9141], 15);
 
-        // Cargar mapa base OpenStreetMap
+    <script>
+        // Control de vistas SPA (Single Page Application)
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            
+            document.getElementById('view-' + viewId).classList.add('active');
+            element.classList.add('active');
+
+            // Recalcular tamaño del mapa al volver a visibilizarlo
+            if (viewId === 'mapa' && map) {
+                setTimeout(() => map.invalidateSize(), 200);
+            }
+
+            // Colapsar navbar en móviles al hacer click
+            const navbarCollapse = document.getElementById('navbarNav');
+            if (navbarCollapse.classList.contains('show')) {
+                bootstrap.Collapse.getInstance(navbarCollapse).hide();
+            }
+        }
+
+        // Inicialización del Mapa Leaflet
+        var map = L.map('map').setView([-34.4587, -58.9141], 14);
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        // Marcadores personalizados para los colectivos
+        // Iconos de colectivos vectoriales
         var busIcon1 = L.divIcon({
-            html: '<div class="bus-marker">510</div>',
+            html: '<div class="bus-marker-icon">510</div>',
             className: '',
-            iconSize: [34, 34],
-            iconAnchor: [17, 17]
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
         });
 
         var busIcon2 = L.divIcon({
-            html: '<div class="bus-marker" style="background-color: #dc3545;">520</div>',
+            html: '<div class="bus-marker-icon bus-marker-warning">520</div>',
             className: '',
-            iconSize: [34, 34],
-            iconAnchor: [17, 17]
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
         });
 
-        // Crear unidades en el mapa
-        var bus1 = L.marker([-34.4560, -58.9120], {icon: busIcon1}).addTo(map).bindPopup("<b>Línea 510</b><br>Interno 24 - En horario");
-        var bus2 = L.marker([-34.4600, -58.9160], {icon: busIcon2}).addTo(map).bindPopup("<b>Línea 520</b><br>Interno 12 - Con demora");
+        var bus1 = L.marker([-34.4560, -58.9120], {icon: busIcon1}).addTo(map)
+            .bindPopup("<b>Línea 510 - Interno 24</b><br>Estado: En Horario<br>Velocidad: 32 km/h");
+            
+        var bus2 = L.marker([-34.4600, -58.9160], {icon: busIcon2}).addTo(map)
+            .bindPopup("<b>Línea 520 - Interno 12</b><br>Estado: Con Demora<br>Velocidad: 18 km/h");
 
-        // Simulación de movimiento GPS en tiempo real
+        // Simulación GPS en tiempo real
         setInterval(function() {
-            var lat1 = bus1.getLatLng().lat + (Math.random() - 0.5) * 0.0008;
-            var lng1 = bus1.getLatLng().lng + (Math.random() - 0.5) * 0.0008;
+            var lat1 = bus1.getLatLng().lat + (Math.random() - 0.5) * 0.0006;
+            var lng1 = bus1.getLatLng().lng + (Math.random() - 0.5) * 0.0006;
             bus1.setLatLng([lat1, lng1]);
 
-            var lat2 = bus2.getLatLng().lat + (Math.random() - 0.5) * 0.0008;
-            var lng2 = bus2.getLatLng().lng + (Math.random() - 0.5) * 0.0008;
+            var lat2 = bus2.getLatLng().lat + (Math.random() - 0.5) * 0.0006;
+            var lng2 = bus2.getLatLng().lng + (Math.random() - 0.5) * 0.0006;
             bus2.setLatLng([lat2, lng2]);
         }, 2500);
+
+        // Handlers para formularios
+        function handleSubeRecharge(e) {
+            e.preventDefault();
+            alert('Carga realizada con éxito. Acredite el saldo apoyando la tarjeta en la terminal de la UNP o desde la app SUBE.');
+        }
+
+        function handleClaimSubmit(e) {
+            e.preventDefault();
+            const ticketNum = Math.floor(100000 + Math.random() * 900000);
+            alert('Reporte registrado correctamente. Número de Ticket: #' + ticketNum);
+            e.target.reset();
+        }
     </script>
 </body>
 </html>
-
