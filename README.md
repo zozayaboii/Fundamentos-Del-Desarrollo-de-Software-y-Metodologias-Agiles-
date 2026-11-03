@@ -1,5 +1,21 @@
-# Fundamentos-Del-Desarrollo-de-Software-y-Metodologias-Agiles-
-Trabajo Final de Fundamentos
+# UNIVERSIDAD NACIONAL DE PILAR
+## Materia: Fundamentos del Desarrollo del Software y Metodologías Ágiles
 
-Tablero Kanban:
-https://cryptpad.fr/kanban/#/2/kanban/edit/Z-4+wV6ibquBfK6vKwLh8GuH/
+**Segundo Parcial Práctico Integrador**
+
+**Docente:** Prof. Ariel Bulacio  
+**Fecha de Entrega y Defensa:** 4 de Noviembre de 2026
+**Modalidad:** Trabajo Grupal (Equipo de 3 Integrantes)
+
+### Integrantes del Equipo
+* **Juan Jose Ignacio Flores**
+* **Xiomara Guadalupe Monge**
+* **Samira Zozaya**
+
+---
+
+### Enlaces Públicos del Proyecto
+* **Repositorio GitHub:** https://github.com/zozayaboii/Fundamentos-Del-Desarrollo-de-Software-y-Metodologias-Agiles-
+* **Prototipo Desplegado Caso 1 (GitHub Pages):** https://zozayaboii.github.io/Fundamentos-Del-Desarrollo-de-Software-y-Metodologias-Agiles-/
+* **Tablero Kanban en Trello:**
+https://trello.com/invite/b/6aea2562a863198c87245957/ATTIe1dd2c70d6bbd839f0dbf6ada902754bE0B46356/tablero-kanban-fdsyma
