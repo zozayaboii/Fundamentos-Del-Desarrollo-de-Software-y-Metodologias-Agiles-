@@ -78,7 +78,10 @@ Cuando una historia supera la complejidad que el equipo puede estimar razonablem
 | Pruebas de estrés y latencia de la geolocalización | 3 |
 | Módulo dinámico de alertas y desvíos | 5 |
 | Análisis e integración con entorno de pruebas SUBE | 8 |
-| **Total Estimado del Backlog Inicial** | **42** |
+| Sistema de Autenticación y Gestión de Perfiles (Favoritos) | 5 |
+| Integración de Notificaciones Push (Alertas en el celular) | 8 |
+| Panel de Control (Dashboard) para la Municipalidad | 8 |
+| **Total Estimado del Backlog Inicial** | **63** |
 
 Los valores representan estimaciones iniciales del equipo. Podrán revisarse durante el refinamiento del Product Backlog cuando se conozcan mejor los requisitos y las dificultades técnicas.
 
