@@ -144,6 +144,17 @@
                         </a>
                     </li>
                 </ul>
+                
+                <!-- Notificaciones y Perfil -->
+                <div class="d-flex align-items-center ms-lg-4 mt-3 mt-lg-0 gap-3 border-start ps-lg-3">
+                    <a href="#" class="text-white position-relative text-decoration-none" title="Notificaciones">
+                        <i class="bi bi-bell-fill fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                    </a>
+                    <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2">
+                        <i class="bi bi-person-circle"></i> Mi Perfil
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -374,11 +385,21 @@
 
     </main>
 
+    <!-- Toast de Notificaciones -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <div id="appToast" class="toast text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill fs-5 text-white"></i>
+                <span id="toastMessage" class="text-white">Operación exitosa</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Pie de página institucional -->
     <footer class="footer py-3 border-top border-secondary">
-        <div class="container text-center text-md-between d-md-flex align-items-center">
+        <div class="container text-center text-md-between d-md-flex align-items-center justify-content-between">
             <p class="mb-0">Universidad Nacional de Pilar &copy; 2026 - Proyecto Ágil Integrador</p>
-            <p class="mb-0 small text-white-50">Entorno CI/CD Automatizado | GitHub Pages Deploy</p>
+            <p class="mb-0 small text-white-50">Entorno CI/CD Automatizado | GitHub Pages Deploy | <a href="#" class="text-info text-decoration-none" onclick="alert('Acceso restringido: Redirigiendo al Dashboard Municipal (Sprint 3)')">Portal Municipal</a></p>
         </div>
     </footer>
 
@@ -414,6 +435,18 @@
             attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
+        // Trazado de ruta teórica para la Línea 510
+        var route510 = [
+            [-34.4560, -58.9120], [-34.4575, -58.9135], 
+            [-34.4600, -58.9140], [-34.4620, -58.9120]
+        ];
+        L.polyline(route510, {
+            color: '#1b6ca8', 
+            weight: 4, 
+            opacity: 0.7, 
+            dashArray: '10, 10'
+        }).addTo(map).bindPopup("Recorrido Troncal 510");
+
         // Iconos de colectivos vectoriales
         var busIcon1 = L.divIcon({
             html: '<div class="bus-marker-icon">510</div>',
@@ -446,16 +479,23 @@
             bus2.setLatLng([lat2, lng2]);
         }, 2500);
 
-        // Handlers para formularios
+        // Handlers para formularios con Toasts
+        function showToast(message) {
+            document.getElementById('toastMessage').innerText = message;
+            const toast = new bootstrap.Toast(document.getElementById('appToast'));
+            toast.show();
+        }
+
         function handleSubeRecharge(e) {
             e.preventDefault();
-            alert('Carga realizada con éxito. Acredite el saldo apoyando la tarjeta en la terminal de la UNP o desde la app SUBE.');
+            showToast('Carga de SUBE acreditada con éxito. Listo para viajar.');
+            e.target.reset();
         }
 
         function handleClaimSubmit(e) {
             e.preventDefault();
             const ticketNum = Math.floor(100000 + Math.random() * 900000);
-            alert('Reporte registrado correctamente. Número de Ticket: #' + ticketNum);
+            showToast('Reclamo #' + ticketNum + ' enviado a la Municipalidad.');
             e.target.reset();
         }
     </script>
