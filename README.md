@@ -18,7 +18,8 @@
 - **Repositorio GitHub:** https://github.com/zozayaboii/Fundamentos-Del-Desarrollo-de-Software-y-Metodologias-Agiles-
 - **Prototipo Desplegado Caso 1 (GitHub Pages):** https://zozayaboii.github.io/Fundamentos-Del-Desarrollo-de-Software-y-Metodologias-Agiles-/
 - **Tablero Kanban en Trello:** https://trello.com/b/4LVbKjrh
-- **Diagrama de Gantt Caso 2:** https://app.ganttpro.com/shared/gantt/29fde807e2f2c1671fe3bd60f920e441ef95dfdd803ad9f13e873114f5a7833f/3349104 
+- **Diagrama de Gantt Caso 2:**
+https://app.ganttpro.com/shared/gantt/a9eb1408582041c57006a4dad70893369e8f40b9f9f1e1656d447a1ced313cc8/3372639
 
 ---
 
