@@ -4,119 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PilarBus - Ecosistema de Transporte Público</title>
-    
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Leaflet CSS (Mapa) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    
-    <style>
-        :root {
-            --primary-blue: #0f4c81;
-            --secondary-blue: #1b6ca8;
-            --accent-color: #00a896;
-            --bg-light: #f4f7f6;
-        }
-
-        body {
-            background-color: var(--bg-light);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .navbar {
-            background-color: var(--primary-blue) !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-        }
-
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-link {
-            font-weight: 500;
-            transition: color 0.2s ease;
-        }
-
-        .nav-link.active {
-            border-bottom: 3px solid var(--accent-color);
-        }
-
-        .view-section {
-            display: none;
-        }
-
-        .view-section.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #map {
-            height: 65vh;
-            min-height: 380px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            z-index: 1;
-        }
-
-        .bus-marker-icon {
-            background-color: var(--primary-blue);
-            color: white;
-            font-weight: 700;
-            font-size: 11px;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-        }
-
-        .bus-marker-warning {
-            background-color: #dc3545;
-        }
-
-        .card-custom {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            background: white;
-        }
-
-        .status-badge {
-            font-size: 0.85rem;
-            padding: 0.4em 0.8em;
-            border-radius: 6px;
-        }
-
-        .footer {
-            margin-top: auto;
-            background-color: #1e293b;
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- Navegación Adaptable -->
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#" onclick="switchView('mapa', document.getElementById('nav-mapa'))">
                 <i class="bi bi-bus-front-fill fs-4 text-info"></i>
-                <span>PilarBus <small class="fs-6 fw-light text-white-50">UNP</small></span>
+                <span>PilarBus</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -124,7 +23,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto gap-1">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#" onclick="switchView('mapa', this)">
+                        <a id="nav-mapa" class="nav-link active" href="#" onclick="switchView('mapa', this)">
                             <i class="bi bi-geo-alt-fill me-1"></i>Mapa en Vivo
                         </a>
                     </li>
@@ -143,15 +42,35 @@
                             <i class="bi bi-exclamation-triangle-fill me-1"></i>Reclamos
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="switchView('feedback', this)">
+                            <i class="bi bi-star-fill me-1"></i>Feedback
+                        </a>
+                    </li>
                 </ul>
                 
-                <!-- Notificaciones y Perfil -->
-                <div class="d-flex align-items-center ms-lg-4 mt-3 mt-lg-0 gap-3 border-start ps-lg-3">
-                    <a href="#" class="text-white position-relative text-decoration-none" title="Notificaciones">
-                        <i class="bi bi-bell-fill fs-5"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
-                    </a>
-                    <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center ms-lg-3 mt-3 mt-lg-0 gap-3 border-start ps-lg-3">
+                    <div class="dropdown">
+                        <a href="#" class="text-white position-relative text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false" onclick="clearNotifBadge()" title="Notificaciones Push">
+                            <i class="bi bi-bell-fill fs-5"></i>
+                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="min-width: 280px;">
+                            <li class="dropdown-header fw-bold text-dark">Notificaciones Recientes</li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="px-2 py-1 small">
+                                <span class="badge bg-warning text-dark mb-1">Línea 520 - Favorita</span>
+                                <p class="mb-0 text-muted">Desvío activo por obras en calle Tratado del Pilar (+8 min).</p>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="px-2 py-1 small">
+                                <span class="badge bg-info text-dark mb-1">Línea 510 - Favorita</span>
+                                <p class="mb-0 text-muted">Interno 24 aproximándose a parada Estación Pilar (3 min).</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button id="btn-perfil" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2" onclick="switchView('perfil', this)">
                         <i class="bi bi-person-circle"></i> Mi Perfil
                     </button>
                 </div>
@@ -180,7 +99,7 @@
                     <div class="card card-custom p-3 mb-3">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <h6 class="fw-bold m-0">Línea 510</h6>
+                                <h6 class="fw-bold m-0">Línea 510 <i class="bi bi-heart-fill text-danger small ms-1" title="En tus favoritos"></i></h6>
                                 <small class="text-muted">Recorrido: Estación Pilar - Alberti</small>
                             </div>
                             <span class="badge bg-success-subtle text-success border border-success-subtle status-badge">Normal</span>
@@ -192,7 +111,7 @@
                     <div class="card card-custom p-3 mb-3">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <h6 class="fw-bold m-0">Línea 520</h6>
+                                <h6 class="fw-bold m-0">Línea 520 <i class="bi bi-heart-fill text-danger small ms-1" title="En tus favoritos"></i></h6>
                                 <small class="text-muted">Recorrido: Plaza Pilar - Derqui</small>
                             </div>
                             <span class="badge bg-warning-subtle text-warning border border-warning-subtle status-badge">Desvío</span>
@@ -217,7 +136,7 @@
                         <i class="bi bi-kanban fs-2 text-primary"></i>
                         <div>
                             <strong class="d-block">Metodología Ágil</strong>
-                            <small class="text-muted">Plataforma bajo desarrollo iterativo. Beta v1.0.4.</small>
+                            <small class="text-muted">Plataforma bajo desarrollo iterativo. Beta v1.1.0.</small>
                         </div>
                     </div>
                 </div>
@@ -289,13 +208,11 @@
                             <h4 class="fw-bold mt-2">Carga Virtual SUBE</h4>
                             <p class="text-muted small">Simulador de acreditación de saldo instantáneo</p>
                         </div>
-                        
                         <form onsubmit="handleSubeRecharge(event)">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Número de Tarjeta SUBE</label>
                                 <input type="text" class="form-control" placeholder="6061 2680 XXXX XXXX" maxlength="19" required>
                             </div>
-                            
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Monto a Cargar</label>
                                 <div class="row g-2">
@@ -313,7 +230,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Medio de Pago</label>
                                 <select class="form-select">
@@ -322,7 +238,6 @@
                                     <option>Tarjeta de Débito</option>
                                 </select>
                             </div>
-
                             <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
                                 <i class="bi bi-wallet2 me-2"></i>Acreditar Carga
                             </button>
@@ -341,10 +256,9 @@
                             <i class="bi bi-chat-left-text-fill fs-2 text-primary"></i>
                             <div>
                                 <h4 class="fw-bold m-0">Canal Directo de Reclamos</h4>
-                                <p class="text-muted m-0 small">Enviá reportes a la Municipalidad y al centro de atención UNP</p>
+                                <p class="text-muted m-0 small">Enviá reportes a la Municipalidad y al centro de atención al pasajero</p>
                             </div>
                         </div>
-
                         <form onsubmit="handleClaimSubmit(event)">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -373,7 +287,7 @@
                                 </div>
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
-                                        <i class="bi bg-send me-1"></i>Enviar Reporte
+                                        <i class="bi bi-send-fill me-1"></i>Enviar Reporte
                                     </button>
                                 </div>
                             </div>
@@ -383,9 +297,188 @@
             </div>
         </section>
 
+        <!-- VISTA 5: FEEDBACK DE LA APP -->
+        <section id="view-feedback" class="view-section">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card card-custom p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="bi bi-lightbulb-fill fs-2 text-warning"></i>
+                            <div>
+                                <h4 class="fw-bold m-0">Feedback de la Aplicación</h4>
+                                <p class="text-muted m-0 small">Tu opinión define las próximas mejoras del Product Backlog</p>
+                            </div>
+                        </div>
+                        <form onsubmit="handleFeedbackSubmit(event)">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold d-block">Calificación General de la Beta</label>
+                                <div id="starContainer" class="d-flex gap-2">
+                                    <i class="bi bi-star-fill star-rating active" data-val="1" onclick="setRating(1)"></i>
+                                    <i class="bi bi-star-fill star-rating active" data-val="2" onclick="setRating(2)"></i>
+                                    <i class="bi bi-star-fill star-rating active" data-val="3" onclick="setRating(3)"></i>
+                                    <i class="bi bi-star-fill star-rating active" data-val="4" onclick="setRating(4)"></i>
+                                    <i class="bi bi-star-fill star-rating" data-val="5" onclick="setRating(5)"></i>
+                                </div>
+                                <input type="hidden" id="feedbackRating" value="4">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Aspecto a Evaluar</label>
+                                <select id="feedbackCategory" class="form-select" required>
+                                    <option value="Precisión del Mapa GPS">Precisión del Mapa GPS</option>
+                                    <option value="Diseño e Interfaz Mobile">Diseño e Interfaz Mobile</option>
+                                    <option value="Carga Virtual SUBE">Carga Virtual SUBE</option>
+                                    <option value="Sugerencia de Nueva Funcionalidad">Sugerencia de Nueva Funcionalidad</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Comentario o Sugerencia</label>
+                                <textarea id="feedbackComment" class="form-control" rows="3" placeholder="Contanos qué mejorarías o qué función te gustaría sumar en el próximo Sprint..." required></textarea>
+                            </div>
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="betaTesterCheck" checked>
+                                <label class="form-check-label small text-muted" for="betaTesterCheck">
+                                    Acepto ser contactado para pruebas de usabilidad en futuros Sprints.
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                                <i class="bi bi-chat-heart-fill me-2"></i>Enviar Valoración
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card card-custom p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold m-0">Aportes de Pasajeros Beta</h5>
+                            <span class="badge bg-primary-subtle text-primary">Sprint Review</span>
+                        </div>
+                        <p class="text-muted small">Comentarios recientes incorporados al refinamiento del Backlog:</p>
+                        <div id="feedbackList" class="d-flex flex-column gap-3">
+                            <div class="p-3 rounded bg-light border">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="small">Precisión del Mapa GPS</strong>
+                                    <span class="text-warning small">
+                                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                    </span>
+                                </div>
+                                <p class="mb-1 small text-dark">"Muy útil ver el trazado de la Línea 510 en tiempo real antes de salir hacia la estación."</p>
+                                <small class="text-muted">Usuario Verificado - Hace 2 horas</small>
+                            </div>
+                            <div class="p-3 rounded bg-light border">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="small">Sugerencia de Nueva Funcionalidad</strong>
+                                    <span class="text-warning small">
+                                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                    </span>
+                                </div>
+                                <p class="mb-1 small text-dark">"Estaría bueno poder filtrar las paradas accesibles para movilidad reducida."</p>
+                                <small class="text-muted">Pasajero Línea 520 - Ayer</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 6: MI PERFIL Y FAVORITOS -->
+        <section id="view-perfil" class="view-section">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card card-custom p-4 text-center">
+                        <div class="avatar-circle mx-auto mb-3">RZ</div>
+                        <h5 class="fw-bold mb-1" id="profileDisplayName">Ramiro Zozaya</h5>
+                        <p class="text-muted small mb-3">Pasajero Frecuente - Del Viso, Pilar</p>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle mb-3">Cuenta Verificada (JWT)</span>
+                        <hr>
+                        <div class="text-start">
+                            <label class="form-label small fw-bold">Nombre para mostrar</label>
+                            <input type="text" id="profileNameInput" class="form-control form-control-sm mb-2" value="Ramiro Zozaya">
+                            <label class="form-label small fw-bold">Tarjeta SUBE Vinculada</label>
+                            <input type="text" class="form-control form-control-sm mb-3" value="6061 2680 4419 8821" readonly>
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="updateProfileName()">
+                                <i class="bi bi-pencil-square me-1"></i>Actualizar Datos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="card card-custom p-4 mb-4">
+                        <h5 class="fw-bold mb-1"><i class="bi bi-heart-fill text-danger me-2"></i>Mis Líneas Favoritas</h5>
+                        <p class="text-muted small mb-3">Seleccioná tus líneas habituales para priorizarlas en el mapa y recibir alertas automáticas.</p>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="fav-line-card selected p-3 d-flex justify-content-between align-items-center" onclick="toggleFavoriteCard(this)">
+                                    <div>
+                                        <strong class="d-block text-primary">Línea 510</strong>
+                                        <small class="text-muted">Estación Pilar - Del Viso</small>
+                                    </div>
+                                    <i class="bi bi-heart-fill text-danger fs-5"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="fav-line-card selected p-3 d-flex justify-content-between align-items-center" onclick="toggleFavoriteCard(this)">
+                                    <div>
+                                        <strong class="d-block text-primary">Línea 520</strong>
+                                        <small class="text-muted">Plaza Pilar - Derqui</small>
+                                    </div>
+                                    <i class="bi bi-heart-fill text-danger fs-5"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="fav-line-card p-3 d-flex justify-content-between align-items-center" onclick="toggleFavoriteCard(this)">
+                                    <div>
+                                        <strong class="d-block text-primary">Línea 276</strong>
+                                        <small class="text-muted">Pilar - Escobar</small>
+                                    </div>
+                                    <i class="bi bi-heart text-secondary fs-5"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="fav-line-card p-3 d-flex justify-content-between align-items-center" onclick="toggleFavoriteCard(this)">
+                                    <div>
+                                        <strong class="d-block text-primary">Línea 501</strong>
+                                        <small class="text-muted">Estación Pilar - San Alejo</small>
+                                    </div>
+                                    <i class="bi bi-heart text-secondary fs-5"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-pin-map-fill text-primary me-2"></i>Paradas Guardadas</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light text-dark border p-2"><i class="bi bi-geo-alt text-primary me-1"></i>Estación Pilar (Andén 2)</span>
+                            <span class="badge bg-light text-dark border p-2"><i class="bi bi-geo-alt text-primary me-1"></i>Plaza 12 de Octubre</span>
+                            <span class="badge bg-light text-dark border p-2"><i class="bi bi-geo-alt text-primary me-1"></i>Cruce Ruta 26 - Del Viso</span>
+                        </div>
+                    </div>
+
+                    <div class="card card-custom p-4">
+                        <h5 class="fw-bold mb-1"><i class="bi bi-bell-fill text-primary me-2"></i>Notificaciones Push (FCM)</h5>
+                        <p class="text-muted small mb-3">Configurá qué avisos querés recibir en tu dispositivo en tiempo real.</p>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="pushDesvios" checked>
+                            <label class="form-check-label" for="pushDesvios">Alertas inmediatas por desvíos o cortes en mis líneas favoritas</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="pushProximidad" checked>
+                            <label class="form-check-label" for="pushProximidad">Avisar cuando una unidad esté a menos de 5 minutos de mi parada</label>
+                        </div>
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" id="pushSube">
+                            <label class="form-check-label" for="pushSube">Confirmaciones de acreditación de carga SUBE</label>
+                        </div>
+                        <button class="btn btn-primary px-4 fw-bold" onclick="saveProfilePreferences()">
+                            <i class="bi bi-check2-circle me-1"></i>Guardar Preferencias
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Toast de Notificaciones -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
         <div id="appToast" class="toast text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-body d-flex align-items-center gap-2">
@@ -395,7 +488,6 @@
         </div>
     </div>
 
-    <!-- Pie de página institucional -->
     <footer class="footer py-3 border-top border-secondary">
         <div class="container text-center text-md-between d-md-flex align-items-center justify-content-between">
             <p class="mb-0">Universidad Nacional de Pilar &copy; 2026 - Proyecto Ágil Integrador</p>
@@ -403,101 +495,8 @@
         </div>
     </footer>
 
-    <!-- Scripts CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        // Control de vistas SPA (Single Page Application)
-        function switchView(viewId, element) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            
-            document.getElementById('view-' + viewId).classList.add('active');
-            element.classList.add('active');
-
-            // Recalcular tamaño del mapa al volver a visibilizarlo
-            if (viewId === 'mapa' && map) {
-                setTimeout(() => map.invalidateSize(), 200);
-            }
-
-            // Colapsar navbar en móviles al hacer click
-            const navbarCollapse = document.getElementById('navbarNav');
-            if (navbarCollapse.classList.contains('show')) {
-                bootstrap.Collapse.getInstance(navbarCollapse).hide();
-            }
-        }
-
-        // Inicialización del Mapa Leaflet
-        var map = L.map('map').setView([-34.4587, -58.9141], 14);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
-
-        // Trazado de ruta teórica para la Línea 510
-        var route510 = [
-            [-34.4560, -58.9120], [-34.4575, -58.9135], 
-            [-34.4600, -58.9140], [-34.4620, -58.9120]
-        ];
-        L.polyline(route510, {
-            color: '#1b6ca8', 
-            weight: 4, 
-            opacity: 0.7, 
-            dashArray: '10, 10'
-        }).addTo(map).bindPopup("Recorrido Troncal 510");
-
-        // Iconos de colectivos vectoriales
-        var busIcon1 = L.divIcon({
-            html: '<div class="bus-marker-icon">510</div>',
-            className: '',
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
-        });
-
-        var busIcon2 = L.divIcon({
-            html: '<div class="bus-marker-icon bus-marker-warning">520</div>',
-            className: '',
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
-        });
-
-        var bus1 = L.marker([-34.4560, -58.9120], {icon: busIcon1}).addTo(map)
-            .bindPopup("<b>Línea 510 - Interno 24</b><br>Estado: En Horario<br>Velocidad: 32 km/h");
-            
-        var bus2 = L.marker([-34.4600, -58.9160], {icon: busIcon2}).addTo(map)
-            .bindPopup("<b>Línea 520 - Interno 12</b><br>Estado: Con Demora<br>Velocidad: 18 km/h");
-
-        // Simulación GPS en tiempo real
-        setInterval(function() {
-            var lat1 = bus1.getLatLng().lat + (Math.random() - 0.5) * 0.0006;
-            var lng1 = bus1.getLatLng().lng + (Math.random() - 0.5) * 0.0006;
-            bus1.setLatLng([lat1, lng1]);
-
-            var lat2 = bus2.getLatLng().lat + (Math.random() - 0.5) * 0.0006;
-            var lng2 = bus2.getLatLng().lng + (Math.random() - 0.5) * 0.0006;
-            bus2.setLatLng([lat2, lng2]);
-        }, 2500);
-
-        // Handlers para formularios con Toasts
-        function showToast(message) {
-            document.getElementById('toastMessage').innerText = message;
-            const toast = new bootstrap.Toast(document.getElementById('appToast'));
-            toast.show();
-        }
-
-        function handleSubeRecharge(e) {
-            e.preventDefault();
-            showToast('Carga de SUBE acreditada con éxito. Listo para viajar.');
-            e.target.reset();
-        }
-
-        function handleClaimSubmit(e) {
-            e.preventDefault();
-            const ticketNum = Math.floor(100000 + Math.random() * 900000);
-            showToast('Reclamo #' + ticketNum + ' enviado a la Municipalidad.');
-            e.target.reset();
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
